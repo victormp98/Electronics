@@ -1,0 +1,60 @@
+@using Electronic.Models
+@model List<Cupon>
+
+@{
+    ViewData["Title"] = "Gestión de Cupones";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <a asp-action="CreateCoupon" class="btn btn-primary">Crear Nuevo Cupón</a>
+</p>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["Message"]
+    </div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Code)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Discount)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().StartDate)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().EndDate)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().IsActive)</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null)
+        {
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Code)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Discount)</td>
+                    <td>@Html.DisplayFor(modelItem => item.StartDate)</td>
+                    <td>@Html.DisplayFor(modelItem => item.EndDate)</td>
+                    <td>@Html.DisplayFor(modelItem => item.IsActive)</td>
+                    <td>
+                        <a asp-action="EditCoupon" asp-route-id="@item.Id">Editar</a> |
+                        <a asp-action="DeleteCoupon" asp-route-id="@item.Id">Eliminar</a>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@if (Model == null || !Model.Any())
+{
+    <p>No hay cupones disponibles.</p>
+}
+
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-secondary">Volver al Panel de Administración</a>
+</div>

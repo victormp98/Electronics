@@ -1,0 +1,42 @@
+@using Electronic.Models
+@{
+    ViewData["Title"] = "Escribir Reseña";
+    var productId = ViewBag.ProductId;
+    var productName = ViewBag.ProductName;
+}
+
+<h1>Escribir Reseña para @productName</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-controller="Product" asp-action="RateProduct" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <input type="hidden" name="productId" value="@productId" />
+
+            <div class="form-group mb-3">
+                <label for="rating" class="control-label">Calificación (1-5 estrellas):</label>
+                <div>
+                    <input type="radio" id="rating1" name="rating" value="1" required /> <label for="rating1">1</label>
+                    <input type="radio" id="rating2" name="rating" value="2" /> <label for="rating2">2</label>
+                    <input type="radio" id="rating3" name="rating" value="3" /> <label for="rating3">3</label>
+                    <input type="radio" id="rating4" name="rating" value="4" /> <label for="rating4">4</label>
+                    <input type="radio" id="rating5" name="rating" value="5" /> <label for="rating5">5</label>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="comment" class="control-label">Comentario:</label>
+                <textarea name="comment" class="form-control" rows="5"></textarea>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Enviar Reseña</button>
+                <a asp-action="Details" asp-route-id="@productId" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

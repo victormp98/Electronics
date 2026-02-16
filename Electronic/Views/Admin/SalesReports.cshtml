@@ -1,0 +1,55 @@
+@using Electronic.Models
+@{
+    ViewData["Title"] = "Reportes de Ventas";
+    var totalRevenue = ViewBag.TotalRevenue ?? 0m;
+    var totalOrders = ViewBag.TotalOrders ?? 0;
+    var topSellingProducts = ViewBag.TopSellingProducts as List<dynamic>;
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                Resumen General de Ventas
+            </div>
+            <div class="card-body">
+                <p><strong>Ingresos Totales:</strong> @totalRevenue.ToString("C")</p>
+                <p><strong>Total de Pedidos Pagados:</strong> @totalOrders</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mt-4">Top 5 Productos más Vendidos</h2>
+@if (topSellingProducts != null && topSellingProducts.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>Cantidad Vendida</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in topSellingProducts)
+            {
+                <tr>
+                    <td>@item.Product.Name</td>
+                    <td>@item.Product.Brand</td>
+                    <td>@item.QuantitySold</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No hay datos de productos más vendidos disponibles.</p>
+}
+
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-secondary">Volver al Panel de Administración</a>
+</div>

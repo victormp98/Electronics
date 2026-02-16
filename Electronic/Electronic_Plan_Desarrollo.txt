@@ -1,0 +1,1403 @@
+# Proceso de Desarrollo — Tienda Online de Aparatos Electrónicos
+
+---
+
+## 1. Proceso General de Desarrollo
+
+### 1.1 Metodología
+
+* Enfoque ágil (Scrum).
+* Sprints de 2 semanas.
+* Entregables incrementales.
+* Integración continua.
+
+### 1.2 Fases
+
+1. Análisis de requerimientos.
+2. Diseño de arquitectura.
+3. Modelado de datos.
+4. Desarrollo backend.
+5. Desarrollo frontend.
+6. Integraciones (pagos, envíos).
+7. Pruebas QA.
+8. Despliegue en nube.
+9. Monitoreo y mejoras.
+
+---
+
+# 2. Arquitectura MVC
+
+## 2.1 Descripción
+
+**Modelo (Model)**
+
+* Productos
+* Usuarios
+* Pedidos
+* Inventario
+* Pagos
+
+**Vista (View)**
+
+* Web tienda
+* Carrito
+* Checkout
+* Tracking
+* Panel admin
+
+**Controlador (Controller)**
+
+* Lógica de compra
+* Validación stock
+* Procesamiento pagos
+* Estados de pedido
+* Notificaciones
+
+---
+
+## 2.2 Diagrama MVC (Lógico)
+
+```
+Usuario
+   ↓
+Vista (Frontend)
+   ↓ solicita
+Controlador (API / Backend)
+   ↓ consulta / actualiza
+Modelo (Base de Datos)
+   ↓ responde
+Controlador
+   ↓ renderiza
+Vista
+```
+
+---
+
+# 3. Modelo Entidad‑Relación (ER)
+
+## 3.1 Entidades Principales
+
+### Usuario
+
+* id_usuario (PK)
+* nombre
+* email
+* contraseña
+* dirección
+* teléfono
+* foto_perfil_url
+
+### Direccion
+
+* id_direccion (PK)
+* id_usuario (FK)
+* nombre_receptor
+* telefono
+* calle
+* numero_exterior
+* numero_interior
+* colonia
+* ciudad
+* estado
+* codigo_postal
+* referencias
+* predeterminada
+
+### Producto
+
+* id_producto (PK)
+* nombre
+* marca
+* precio
+* stock
+* categoría
+* especificaciones
+* garantía
+
+### Producto_Imagen
+
+* id_imagen (PK)
+* id_producto (FK)
+* url_imagen
+* es_principal
+
+### Reseña
+
+* id_reseña (PK)
+* id_producto (FK)
+* id_usuario (FK)
+* calificacion
+* comentario
+* fecha
+
+### Wishlist
+
+* id_wishlist (PK)
+* id_usuario (FK)
+* id_producto (FK)
+* fecha
+
+### Cupon
+
+* id_cupon (PK)
+* codigo
+* descuento
+* fecha_inicio
+* fecha_fin
+* activo
+
+### Pedido
+
+* id_pedido (PK)
+* id_usuario (FK)
+* id_direccion (FK)
+* fecha
+* total
+* estado
+
+### Detalle_Pedido
+
+* id_detalle (PK)
+* id_pedido (FK)
+* id_producto (FK)
+* cantidad
+* precio_unitario
+
+### Pago
+
+* id_pago (PK)
+* id_pedido (FK)
+* método
+* estado
+* fecha
+
+### Envio
+
+* id_envio (PK)
+* id_pedido (FK)
+* dirección
+* paquetería
+* guía
+* estado
+
+---
+
+## 3.2 Relación ER (Texto)
+
+```
+Usuario 1 ─── N Direccion
+Usuario 1 ─── N Pedido
+Usuario 1 ─── N Wishlist
+Usuario 1 ─── N Reseña
+
+Producto 1 ─── N Detalle_Pedido
+Producto 1 ─── N Producto_Imagen
+Producto 1 ─── N Reseña
+Producto 1 ─── N Wishlist
+
+Pedido 1 ─── N Detalle_Pedido
+Pedido 1 ─── 1 Pago
+Pedido 1 ─── 1 Envio
+Pedido N ─── 1 Direccion
+```
+
+---
+
+# 4. Casos de Uso UML
+
+## 4.1 Actores
+
+* Cliente
+* Administrador
+* Sistema de Pagos
+* Sistema de Envíos
+
+---
+
+## 4.2 Casos de Uso del Cliente
+
+* Registrarse / Iniciar sesión.
+* Explorar catálogo.
+* Filtrar productos.
+* Comparar productos.
+* Ver ficha técnica.
+* Ver reseñas.
+* Calificar productos.
+* Guardar en wishlist.
+* Personalizar producto.
+* Agregar al carrito.
+* Aplicar cupones.
+* Seleccionar dirección guardada.
+* Realizar compra.
+* Pagar pedido.
+* Rastrear envío.
+* Solicitar devolución.
+
+---
+
+## 4.3 Casos de Uso del Administrador
+
+* Gestionar productos.
+* Actualizar precios.
+* Controlar inventario.
+* Gestionar pedidos.
+* Cambiar estados.
+* Ver reportes.
+* Administrar usuarios.
+
+---
+
+## 4.4 Diagrama de Casos de Uso (Texto)
+
+```
+Cliente ── Comprar producto
+Cliente ── Rastrear pedido
+Cliente ── Gestionar cuenta
+
+Administrador ── Gestionar catálogo
+Administrador ── Gestionar pedidos
+Administrador ── Ver reportes
+```
+
+---
+
+# 5. Estados del Pedido (ENUM)
+
+```
+PENDIENTE
+PAGADO
+EN_PREPARACION
+ENVIADO
+EN_REPARTO
+ENTREGADO
+DEVOLUCION
+```
+
+---
+
+# 6. Historias de Usuario (Scrum)
+
+## 6.1 Cliente
+
+**HU1**
+Como cliente quiero registrarme para comprar productos.
+
+**HU2**
+Como cliente quiero filtrar productos para encontrar opciones adecuadas.
+
+**HU3**
+Como cliente quiero comparar productos para decidir mejor.
+
+**HU4**
+Como cliente quiero ver reseñas para confiar en mi compra.
+
+**HU5**
+Como cliente quiero guardar productos en wishlist para comprarlos después.
+
+**HU6**
+Como cliente quiero aplicar cupones para obtener descuentos.
+
+**HU7**
+Como cliente quiero pagar en línea para recibir mi pedido en casa.
+
+**HU8**
+Como cliente quiero rastrear mi envío para saber cuándo llegará.
+
+---
+
+## 6.2 Administrador
+
+**HU9**
+Como administrador quiero agregar productos para ampliar el catálogo.
+
+**HU10**
+Como administrador quiero gestionar reseñas para moderar contenido.
+
+**HU11**
+Como administrador quiero crear cupones para promociones.
+
+**HU12**
+Como administrador quiero ver reportes para analizar ventas.
+
+---
+
+# 7. Product Backlog
+
+| ID | Historia             | Prioridad | Sprint |
+| -- | -------------------- | --------- | ------ |
+| 1  | Registro de usuarios | Alta      | 1      |
+| 2  | Login                | Alta      | 1      |
+| 3  | Catálogo productos   | Alta      | 1      |
+| 4  | Filtros búsqueda     | Alta      | 2      |
+| 5  | Carrito compras      | Alta      | 2      |
+| 6  | Checkout             | Alta      | 3      |
+| 7  | Pagos online         | Alta      | 3      |
+| 8  | Tracking pedidos     | Media     | 4      |
+| 9  | Panel admin          | Alta      | 4      |
+| 10 | Inventario           | Alta      | 5      |
+| 11 | Reportes ventas      | Media     | 5      |
+| 12 | Devoluciones         | Media     | 6      |
+
+---
+
+# 8. Flujo de Compra
+
+```
+Explorar catálogo →
+Seleccionar producto →
+Personalizar →
+Agregar carrito →
+Pagar →
+Preparación →
+Envío →
+Entrega
+```
+
+---
+
+# 9. Stack Tecnológico Obligatorio
+
+## 9.1 Lenguaje de Programación
+
+**C#**
+
+* Programación orientada a objetos.
+* Tipado fuerte.
+* Alto rendimiento en aplicaciones empresariales.
+* Integración nativa con .NET.
+
+---
+
+## 9.2 Framework Web
+
+**ASP.NET Core (Aplicación Web)**
+
+Características:
+
+* Arquitectura MVC.
+* API REST integrada.
+* Inyección de dependencias.
+* Middleware configurable.
+* Autenticación Identity.
+* Alta escalabilidad.
+
+Capas del proyecto:
+
+```
+Presentation → ASP.NET Core MVC
+Application → Servicios / Lógica
+Domain → Entidades
+Infrastructure → Persistencia MySQL
+```
+
+---
+
+## 9.3 Base de Datos
+
+**MySQL**
+
+Características:
+
+* Relacional.
+* Alto rendimiento en e‑commerce.
+* Soporte transaccional (InnoDB).
+* Replicación y clustering.
+
+Uso en el sistema:
+
+* Usuarios.
+* Productos.
+* Pedidos.
+* Pagos.
+* Inventario.
+* Envíos.
+
+---
+
+## 9.4 ORM
+
+**Entity Framework Core**
+
+Funciones:
+
+* Mapeo objeto‑relacional.
+* Migraciones.
+* LINQ queries.
+* Abstracción SQL.
+
+---
+
+## 9.5 Arquitectura Técnica
+
+```
+Cliente Web
+   ↓
+ASP.NET Core MVC
+   ↓
+Servicios C#
+   ↓
+Entity Framework Core
+   ↓
+MySQL Database
+```
+
+---
+
+# 10. Escalabilidad Futura
+
+---
+
+## 10.1 Funcionalidades Implementadas (Mejoras UX / Ventas)
+
+### Comparador de Productos
+
+Permite al cliente comparar especificaciones técnicas entre múltiples productos en una sola vista para facilitar la decisión de compra.
+
+---
+
+### Reseñas y Calificaciones
+
+Los clientes pueden:
+
+* Calificar con estrellas.
+* Escribir opiniones.
+* Subir fotos.
+
+El administrador puede moderar y responder comentarios.
+
+---
+
+### Lista de Deseos (Wishlist)
+
+Permite:
+
+* Guardar productos.
+* Comprar después.
+* Recibir alertas de disponibilidad o precio.
+
+---
+
+### Cupones y Descuentos
+
+El sistema permite:
+
+* Crear cupones.
+* Descuentos por porcentaje.
+* Promociones por temporada.
+* Envío gratis.
+
+---
+
+### Productos Relacionados / Recomendados
+
+Muestra sugerencias basadas en:
+
+* Categoría.
+* Marca.
+* Historial de compra.
+
+---
+
+## 10.2 Escalabilidad a Futuro (No Implementado — Propuesto)
+
+Las siguientes funcionalidades quedan propuestas como evolución del sistema:
+
+---
+
+### Alertas de Precio
+
+Notifica al cliente cuando un producto baja de precio.
+
+---
+
+### Chat de Soporte en Vivo
+
+Comunicación en tiempo real entre cliente y administrador.
+
+---
+
+### Facturación Electrónica
+
+Generación de facturas fiscales en PDF/XML.
+
+---
+
+### Multi‑Almacén
+
+Inventario distribuido por sucursales.
+
+---
+
+### Simulador de Armado de PC
+
+Configuración personalizada con validación de compatibilidad.
+
+---
+
+### Realidad Aumentada
+
+Visualización del producto en entorno real.
+
+---
+
+### Suscripciones / Membresías
+
+Beneficios exclusivos para clientes frecuentes.
+
+---
+
+### Seguros de Productos
+
+Cobertura contra daños o robo.
+
+---
+
+### Sistema Antifraude
+
+Detección de compras sospechosas.
+
+---
+
+* IA recomendadora.
+* Marketplace multi‑vendor.
+* Dropshipping.
+* AR para visualizar productos.
+* Chatbot soporte.
+
+---
+
+---
+
+# 11. Diagramas UML Adicionales
+
+## 11.1 Diagrama de Secuencia — Compra
+
+```
+Cliente → Frontend → API → BD
+   |        |        |
+Selecciona producto
+   |------->|
+   |        | Validar stock
+   |        |------->|
+   |        |<-------|
+   | Pagar pedido
+   |------->|
+   |        | Procesar pago
+   |        |-------> Pasarela
+   |        |<------- Confirmación
+   |        | Actualizar estado
+```
+
+---
+
+# 12. Planeación de Sprints (Scrum)
+
+## Sprint 1
+
+* Registro
+* Login
+* Base de datos usuarios
+* Arquitectura base
+
+## Sprint 2
+
+* Catálogo
+* Categorías
+* Filtros
+* Buscador
+
+## Sprint 3
+
+* Carrito
+* Checkout
+* Direcciones
+
+## Sprint 4
+
+* Pagos online
+* Facturación
+* Confirmaciones
+
+## Sprint 5
+
+* Tracking
+* Estados ENUM
+* Notificaciones
+
+## Sprint 6
+
+* Panel admin
+* Inventario
+* Reportes
+
+---
+
+# 13. Cronograma Tipo Gantt (6 Meses)
+
+```
+Mes 1 → Análisis + Diseño
+Mes 2 → Backend base
+Mes 3 → Frontend catálogo
+Mes 4 → Compras + Pagos
+Mes 5 → Tracking + Admin
+Mes 6 → QA + Deploy
+```
+
+---
+
+# 14. Costos Estimados de Desarrollo
+
+| Rol      | Cantidad | Costo mensual USD | Subtotal |
+| -------- | -------- | ----------------- | -------- |
+| PM       | 1        | 3,500             | 3,500    |
+| Backend  | 2        | 3,000             | 6,000    |
+| Frontend | 2        | 2,800             | 5,600    |
+| QA       | 1        | 2,000             | 2,000    |
+| DevOps   | 1        | 3,200             | 3,200    |
+
+**Total mensual:** 20,300 USD
+**Proyecto 6 meses:** 121,800 USD
+
+---
+
+# 15. Arquitectura en la Nube
+
+## 15.1 Componentes
+
+* CDN → Imágenes productos
+* Load Balancer
+* Servidores App
+* API Gateway
+* Microservicios
+* Base de datos
+* Almacenamiento
+* Sistema de colas
+
+---
+
+## 15.2 Diagrama Cloud (Texto)
+
+```
+Usuarios
+   ↓
+CDN ── Imágenes
+   ↓
+Load Balancer
+   ↓
+App Servers
+   ↓
+API Gateway
+   ↓
+Microservicios
+   ↓
+Base de Datos
+   ↓
+Storage / Backups
+```
+
+---
+
+# 16. DevOps e Infraestructura
+
+* Docker
+* Kubernetes
+* CI/CD
+* GitHub Actions / GitLab CI
+* Monitoreo (logs + métricas)
+
+---
+
+# 17. Seguridad Avanzada
+
+* JWT Auth
+* OAuth2
+* 2FA
+* Encriptación AES
+* WAF
+* Anti‑DDoS
+
+---
+
+# 18. QA y Testing
+
+## Tipos de pruebas
+
+* Unitarias
+* Integración
+* E2E
+* Performance
+* Seguridad
+
+---
+
+# 19. Roadmap Evolutivo
+
+Fase 1 → E‑commerce básico
+Fase 2 → App móvil
+Fase 3 → IA recomendadora
+Fase 4 → Marketplace
+Fase 5 → Internacionalización
+
+---
+
+---
+
+# 20. Historial de Direcciones del Cliente
+
+## 20.1 Descripción
+
+El cliente podrá almacenar múltiples direcciones de envío para seleccionarlas rápidamente durante el proceso de compra, similar a plataformas de e‑commerce.
+
+---
+
+## 20.2 Funcionalidades
+
+* Agregar nueva dirección.
+* Editar direcciones existentes.
+* Eliminar direcciones.
+* Marcar dirección predeterminada.
+* Seleccionar dirección en checkout.
+
+---
+
+## 20.3 Campos de la Entidad Dirección
+
+### Tabla: Direcciones
+
+* id_direccion (PK)
+* id_usuario (FK)
+* nombre_receptor
+* telefono
+* calle
+* numero_exterior
+* numero_interior
+* colonia
+* ciudad
+* estado
+* codigo_postal
+* referencias
+* predeterminada (bool)
+
+---
+
+## 20.4 Relación
+
+```
+Usuario 1 ─── N Direcciones
+```
+
+---
+
+# 21. Gestión de Fotografías
+
+## 21.1 Fotografías de Usuario
+
+El cliente podrá:
+
+* Subir foto de perfil.
+* Cambiar imagen.
+* Eliminar imagen.
+
+### Campos
+
+Tabla: Usuarios
+
+* foto_perfil_url
+
+---
+
+## 21.2 Fotografías de Productos
+
+El administrador podrá:
+
+* Subir múltiples imágenes por producto.
+* Imagen principal.
+* Galería.
+* Zoom HD.
+
+### Tabla: Producto_Imagen
+
+* id_imagen (PK)
+* id_producto (FK)
+* url_imagen
+* es_principal (bool)
+
+---
+
+## 21.3 Almacenamiento
+
+Opciones:
+
+* Servidor local.
+* Azure Blob Storage.
+* AWS S3.
+* CDN para distribución.
+
+---
+
+# 22. Flujo en Checkout con Direcciones
+
+```
+Carrito → Checkout →
+Seleccionar dirección guardada →
+Confirmar envío →
+Pagar →
+Generar pedido
+```
+
+---
+
+---
+
+# 23. Sistema de Notificaciones y Alertas
+
+## 23.1 Objetivo
+
+Implementar un sistema de notificaciones automáticas para informar eventos críticos tanto a clientes como a administradores en tiempo real.
+
+---
+
+## 23.2 Notificaciones para el Cliente
+
+Eventos:
+
+* Pedido confirmado.
+* Pago aprobado.
+* Producto en preparación.
+* Pedido enviado.
+* Producto en camino.
+* Pedido entregado.
+* Devolución procesada.
+
+Canales:
+
+* Email.
+* SMS.
+* Notificaciones Push.
+* WhatsApp (API externa opcional).
+
+---
+
+## 23.3 Alertas para el Administrador
+
+Eventos del sistema:
+
+### Pedidos
+
+* Nuevo pedido recibido.
+* Pedido pagado.
+* Pedido cancelado.
+
+### Logística
+
+* Producto en preparación.
+* Pedido enviado.
+* Pedido retrasado.
+
+### Inventario
+
+* Producto sin stock.
+* Stock bajo mínimo.
+* Producto más vendido.
+
+### Sistema
+
+* Error de pago.
+* Fallo de servidor.
+* Intentos de acceso sospechosos.
+
+---
+
+## 23.4 Dashboard de Alertas
+
+Panel administrativo mostrará:
+
+* Campana de notificaciones.
+* Contador en tiempo real.
+* Lista de eventos recientes.
+* Filtros por tipo.
+
+---
+
+## 23.5 Tabla Notificaciones
+
+### Notificacion
+
+* id_notificacion (PK)
+* id_usuario (FK opcional)
+* titulo
+* mensaje
+* tipo
+* leida (bool)
+* fecha
+
+---
+
+## 23.6 Flujo de Notificación
+
+```
+Evento sistema →
+Controlador →
+Servicio Notificaciones →
+Guardar en BD →
+Enviar Email / Push →
+Mostrar en Dashboard
+```
+
+---
+
+## 23.7 Tecnologías en ASP.NET Core
+
+* SignalR → Tiempo real.
+* Background Services → Procesos.
+* SMTP → Emails.
+* Firebase → Push.
+
+---
+
+---
+
+# 24. Manual de Usuario
+
+## 24.1 Registro
+
+1. Ingresar a la web.
+2. Seleccionar “Crear cuenta”.
+3. Capturar datos.
+4. Confirmar email.
+
+## 24.2 Inicio de Sesión
+
+* Email + contraseña.
+
+## 24.3 Gestión de Perfil
+
+* Editar datos.
+* Subir foto.
+* Administrar direcciones.
+
+## 24.4 Compra
+
+1. Buscar producto.
+2. Ver especificaciones.
+3. Agregar al carrito.
+4. Seleccionar dirección.
+5. Pagar.
+
+## 24.5 Seguimiento
+
+* Ver estado.
+* Notificaciones.
+
+---
+
+# 25. Manual Técnico
+
+## 25.1 Requisitos de Desarrollo
+
+* Visual Studio 2022.
+* .NET 8.
+* MySQL Server.
+* Node.js (assets frontend).
+
+## 25.2 Estructura del Proyecto
+
+```
+/Presentation
+/Application
+/Domain
+/Infrastructure
+```
+
+## 25.3 Configuración BD
+
+* Connection String en appsettings.json.
+* Migraciones EF Core.
+
+---
+
+# 26. Diagrama de Despliegue
+
+```
+Cliente Web
+   ↓
+Servidor IIS / Kestrel
+   ↓
+App ASP.NET Core
+   ↓
+MySQL Server
+   ↓
+Storage Imágenes
+```
+
+---
+
+# 27. Requerimientos del Sistema
+
+## 27.1 Hardware Servidor
+
+* CPU 8 núcleos.
+* 16 GB RAM.
+* SSD 500 GB.
+
+## 27.2 Software
+
+* Windows Server / Linux.
+* IIS / Nginx.
+* MySQL 8.
+
+---
+
+# 28. Plan de Pruebas
+
+## 28.1 Casos
+
+### Login
+
+* Correcto.
+* Contraseña inválida.
+
+### Compra
+
+* Con stock.
+* Sin stock.
+
+### Pago
+
+* Aprobado.
+* Rechazado.
+
+### Direcciones
+
+* Selección.
+* Nueva dirección.
+
+---
+
+# 29. Mantenimiento
+
+* Backups diarios.
+* Monitoreo.
+* Actualizaciones.
+* Optimización BD.
+
+---
+
+---
+
+# 30. Portada Institucional
+
+**Nombre del proyecto:**
+Sistema Web de Venta de Aparatos Electrónicos
+
+**Materia:** Desarrollo de Aplicaciones Web
+**Tecnologías:** C# – ASP.NET Core – MySQL
+**Alumno(s):** ___________________________
+**Docente:** ___________________________
+**Institución:** ___________________________
+**Fecha:** ___________________________
+
+---
+
+# 31. Índice
+
+1. Introducción
+2. Objetivos
+3. Justificación
+4. Alcance
+5. Proceso de Desarrollo
+6. Arquitectura MVC
+7. Modelo de Datos
+8. Casos de Uso
+9. Historias de Usuario
+10. Backlog
+11. Sprints
+12. Diagramas
+13. Direcciones
+14. Fotografías
+15. Notificaciones
+16. Manual de Usuario
+17. Manual Técnico
+18. Despliegue
+19. Pruebas
+20. Conclusiones
+
+---
+
+# 32. Introducción
+
+El presente proyecto describe el análisis, diseño y desarrollo de un sistema web de comercio electrónico orientado a la venta de aparatos electrónicos. La plataforma permite a los clientes explorar un catálogo digital, gestionar direcciones, realizar compras en línea y dar seguimiento a sus pedidos en tiempo real.
+
+El sistema se desarrolla bajo arquitectura MVC utilizando ASP.NET Core, lenguaje C# y base de datos MySQL, garantizando escalabilidad, seguridad y rendimiento.
+
+---
+
+# 33. Objetivos
+
+## 33.1 Objetivo General
+
+Desarrollar una aplicación web e‑commerce para la venta de productos electrónicos que optimice el proceso de compra y gestión administrativa.
+
+## 33.2 Objetivos Específicos
+
+* Implementar catálogo digital interactivo.
+* Desarrollar carrito y checkout.
+* Integrar pagos en línea.
+* Gestionar inventario.
+* Implementar notificaciones.
+* Permitir historial de direcciones.
+* Desarrollar panel administrativo.
+
+---
+
+# 34. Justificación
+
+El crecimiento del comercio electrónico exige plataformas digitales eficientes que permitan a las empresas comercializar productos tecnológicos de forma segura y escalable.
+
+Este sistema busca:
+
+* Digitalizar ventas.
+* Reducir errores manuales.
+* Mejorar experiencia del cliente.
+* Automatizar inventario.
+* Incrementar alcance de mercado.
+
+---
+
+# 35. Alcance
+
+El sistema contempla:
+
+* Venta de electrónicos.
+* Gestión de usuarios.
+* Direcciones múltiples.
+* Pagos online.
+* Envíos.
+* Notificaciones.
+* Panel admin.
+
+No contempla:
+
+* Marketplace externo.
+* Integración contable avanzada.
+* App móvil nativa (fase futura).
+
+---
+
+# 36. Conclusiones
+
+El desarrollo del sistema demuestra la aplicación práctica de tecnologías modernas como ASP.NET Core, C# y MySQL en la construcción de soluciones e‑commerce escalables.
+
+La implementación de módulos como historial de direcciones, notificaciones en tiempo real, gestión de imágenes y panel administrativo permite ofrecer una experiencia completa tanto para clientes como para administradores.
+
+El proyecto es viable para implementación real y escalable hacia nuevas funcionalidades como inteligencia artificial recomendadora o aplicaciones móviles.
+
+---
+
+---
+
+# 37. Diagrama de Clases UML
+
+## Clases Principales
+
+```
+Usuario
+- id_usuario
+- nombre
+- email
+- contraseña
+- foto_perfil_url
+
+Direccion
+- id_direccion
+- id_usuario
+- calle
+- ciudad
+- estado
+- cp
+
+Producto
+- id_producto
+- nombre
+- precio
+- stock
+
+Reseña
+- id_reseña
+- calificacion
+- comentario
+
+Wishlist
+- id_wishlist
+
+Pedido
+- id_pedido
+- total
+- estado
+
+DetallePedido
+- cantidad
+- precio
+```
+
+Relaciones:
+
+* Usuario → Direcciones
+* Usuario → Pedidos
+* Usuario → Wishlist
+* Usuario → Reseñas
+* Producto → Reseñas
+* Pedido → Detalles
+
+---
+
+# 38. Diagrama de Componentes
+
+```
+[Frontend MVC]
+      ↓
+[Controllers]
+      ↓
+[Services Layer]
+      ↓
+[Repositories]
+      ↓
+[Entity Framework]
+      ↓
+[MySQL]
+```
+
+Componentes adicionales:
+
+* Servicio Notificaciones.
+* Servicio Cupones.
+* Servicio Comparador.
+* Servicio Recomendaciones.
+
+---
+
+# 39. CRUD por Módulo
+
+## Usuarios
+
+* Crear cuenta.
+* Editar perfil.
+* Subir foto.
+* Eliminar cuenta.
+
+## Direcciones
+
+* Crear.
+* Editar.
+* Eliminar.
+* Seleccionar predeterminada.
+
+## Productos
+
+* Crear.
+* Editar.
+* Eliminar.
+* Listar.
+
+## Reseñas
+
+* Crear.
+* Editar.
+* Eliminar.
+* Moderar.
+
+## Cupones
+
+* Crear.
+* Activar.
+* Desactivar.
+* Eliminar.
+
+---
+
+# 40. API Endpoints (ASP.NET Core)
+
+## Auth
+
+```
+POST   /api/auth/register
+POST   /api/auth/login
+```
+
+## Productos
+
+```
+GET    /api/productos
+GET    /api/productos/{id}
+POST   /api/productos
+PUT    /api/productos/{id}
+DELETE /api/productos/{id}
+```
+
+## Direcciones
+
+```
+GET    /api/direcciones
+POST   /api/direcciones
+PUT    /api/direcciones/{id}
+DELETE /api/direcciones/{id}
+```
+
+## Pedidos
+
+```
+POST   /api/pedidos
+GET    /api/pedidos/{id}
+GET    /api/pedidos/usuario
+```
+
+## Wishlist
+
+```
+POST   /api/wishlist
+DELETE /api/wishlist/{id}
+```
+
+## Reseñas
+
+```
+POST   /api/reseñas
+GET    /api/reseñas/producto/{id}
+```
+
+---
+
+# 41. Roles y Permisos
+
+## Roles
+
+### Administrador
+
+* Gestionar productos.
+* Gestionar pedidos.
+* Moderar reseñas.
+* Crear cupones.
+* Ver reportes.
+
+### Cliente
+
+* Comprar.
+* Gestionar direcciones.
+* Calificar productos.
+* Usar cupones.
+* Wishlist.
+
+---
+
+## Control de Acceso
+
+Implementado con:
+
+* ASP.NET Identity.
+* Roles.
+* Claims.
+* JWT.
+
+---
+
+**Documento final completo listo para impresión, exposición o desarrollo real sin incongruencias.**

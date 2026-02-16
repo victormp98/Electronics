@@ -1,0 +1,168 @@
+@using Electronic.Models.ViewModels
+@using System.Linq
+@model CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Confirmar Pedido";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <h2>Detalles del Carrito</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.CartItems)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.Price.ToString("C")</td>
+                        <td>@item.Total.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                    <td><strong>@Model.CartTotal.ToString("C")</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <h2>Información de Envío y Pago</h2>
+        <form asp-action="Checkout" asp-controller="Order" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            @if (Model.ExistingAddresses != null && Model.ExistingAddresses.Any())
+            {
+                <div class="form-group mb-3">
+                    <label asp-for="SelectedAddressId" class="control-label">Seleccionar Dirección Existente:</label>
+                    <select asp-for="SelectedAddressId" class="form-control" onchange="loadAddress(this.value)">
+                        <option value="0">Nueva Dirección</option>
+                        @foreach (var address in Model.ExistingAddresses)
+                        {
+                            <option value="@address.Id">@($"{address.Street} {address.ExteriorNumber}, {address.Neighborhood}, {address.City}")</option>
+                        }
+                    </select>
+                </div>
+                <hr />
+            }
+
+            <div id="newAddressForm">
+                <div class="form-group">
+                    <label asp-for="ReceptorName"></label>
+                    <input asp-for="ReceptorName" class="form-control" />
+                    <span asp-validation-for="ReceptorName" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PhoneNumber"></label>
+                    <input asp-for="PhoneNumber" class="form-control" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Street"></label>
+                    <input asp-for="Street" class="form-control" />
+                    <span asp-validation-for="Street" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ExteriorNumber"></label>
+                    <input asp-for="ExteriorNumber" class="form-control" />
+                    <span asp-validation-for="ExteriorNumber" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="InteriorNumber"></label>
+                    <input asp-for="InteriorNumber" class="form-control" />
+                    <span asp-validation-for="InteriorNumber" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Neighborhood"></label>
+                    <input asp-for="Neighborhood" class="form-control" />
+                    <span asp-validation-for="Neighborhood" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="City"></label>
+                    <input asp-for="City" class="form-control" />
+                    <span asp-validation-for="City" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="State"></label>
+                    <input asp-for="State" class="form-control" />
+                    <span asp-validation-for="State" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PostalCode"></label>
+                    <input asp-for="PostalCode" class="form-control" />
+                    <span asp-validation-for="PostalCode" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="References"></label>
+                    <input asp-for="References" class="form-control" />
+                    <span asp-validation-for="References" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group mt-3">
+                <label asp-for="PaymentMethod"></label>
+                <select asp-for="PaymentMethod" class="form-control">
+                    <option value="">Seleccione un método de pago</option>
+                    <option value="Credit Card">Tarjeta de Crédito</option>
+                    <option value="Debit Card">Tarjeta de Débito</option>
+                    <option value="PayPal">PayPal</option>
+                </select>
+                <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success mt-4">Confirmar Pedido</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            // Function to load existing address details into the form
+            window.loadAddress = function (addressId) {
+                if (addressId === "0") {
+                    // Clear form for new address
+                    $('#newAddressForm input').val('');
+                } else {
+                    // Find the selected address from ExistingAddresses in the model
+                    var addresses = @Json.Serialize(Model.ExistingAddresses);
+                    var selectedAddress = addresses.find(addr => addr.Id == addressId);
+
+                    if (selectedAddress) {
+                        $('#ReceptorName').val(selectedAddress.ReceptorName);
+                        $('#PhoneNumber').val(selectedAddress.PhoneNumber);
+                        $('#Street').val(selectedAddress.Street);
+                        $('#ExteriorNumber').val(selectedAddress.ExteriorNumber);
+                        $('#InteriorNumber').val(selectedAddress.InteriorNumber);
+                        $('#Neighborhood').val(selectedAddress.Neighborhood);
+                        $('#City').val(selectedAddress.City);
+                        $('#State').val(selectedAddress.State);
+                        $('#PostalCode').val(selectedAddress.PostalCode);
+                        $('#References').val(selectedAddress.References);
+                    }
+                }
+            };
+
+            // If there's an existing address selected by default (e.g., IsDefault = true), load it
+            var defaultSelectedAddressId = $('#SelectedAddressId').val();
+            if (defaultSelectedAddressId && defaultSelectedAddressId !== "0") {
+                loadAddress(defaultSelectedAddressId);
+            }
+        });
+    </script>
+}

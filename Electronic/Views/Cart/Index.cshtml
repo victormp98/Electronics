@@ -1,0 +1,75 @@
+@using Electronic.Models.ViewModels
+@model List<CartItemViewModel>
+
+@{
+    ViewData["Title"] = "Tu Carrito de Compras";
+    decimal cartTotal = Model != null ? Model.Sum(item => item.Total) : 0;
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (Model == null || !Model.Any())
+{
+    <p>Tu carrito está vacío.</p>
+    <p><a asp-controller="Product" asp-action="Index">Continúa comprando</a></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>@item.Brand</td>
+                    <td>@item.Price.ToString("C")</td>
+                    <td>
+                        <input type="number" value="@item.Quantity" min="1" class="form-control quantity-input" data-productid="@item.ProductId" style="width: 70px;" />
+                    </td>
+                    <td>@item.Total.ToString("C")</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm remove-item" data-productid="@item.ProductId">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="text-right">
+        <h3>Total del Carrito: @cartTotal.ToString("C")</h3>
+    </div>
+
+    <div class="mt-4">
+        <a asp-controller="Product" asp-action="Index" class="btn btn-secondary">Continuar Comprando</a>
+        <a asp-controller="Order" asp-action="Checkout" class="btn btn-success">Proceder al Pago</a> @* Placeholder for checkout *@
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.quantity-input').on('change', function () {
+                var productId = $(this).data('productid');
+                var newQuantity = $(this).val();
+                // TODO: Implement AJAX call to update cart quantity
+                console.log('Update product ' + productId + ' to quantity ' + newQuantity);
+            });
+
+            $('.remove-item').on('click', function () {
+                var productId = $(this).data('productid');
+                // TODO: Implement AJAX call to remove item from cart
+                console.log('Remove product ' + productId);
+            });
+        });
+    </script>
+}

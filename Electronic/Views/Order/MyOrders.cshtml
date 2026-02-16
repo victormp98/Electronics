@@ -1,0 +1,61 @@
+@using Electronic.Models
+@model List<Pedido>
+
+@{
+    ViewData["Title"] = "Mis Pedidos";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (Model == null || !Model.Any())
+{
+    <p>Aún no has realizado ningún pedido.</p>
+    <p><a asp-controller="Product" asp-action="Index">Explorar Productos</a></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID del Pedido</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Dirección de Envío</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>@order.Id</td>
+                    <td>@order.Date.ToShortDateString()</td>
+                    <td>@order.Total.ToString("C")</td>
+                    <td>@order.Status</td>
+                    <td>
+                        @if (order.Direccion != null)
+                        {
+                            @($"{order.Direccion.Street} {order.Direccion.ExteriorNumber}, {order.Direccion.City}")
+                        }
+                        else
+                        {
+                            <span>N/A</span>
+                        }
+                    </td>
+                    <td>
+                        @* <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-info btn-sm">Ver Detalles</a> *@
+                        @if (order.Status == PedidoStatus.ENTREGADO)
+                        {
+                            <a asp-action="RequestReturn" asp-controller="Order" asp-route-orderId="@order.Id" class="btn btn-warning btn-sm">Solicitar Devolución</a>
+                        }
+                        else if (order.Status == PedidoStatus.DEVOLUCION)
+                        {
+                            <span class="badge bg-info">Devolución Solicitada</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

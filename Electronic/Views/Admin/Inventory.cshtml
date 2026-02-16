@@ -1,0 +1,62 @@
+@using Electronic.Models
+@model List<Producto>
+
+@{
+    ViewData["Title"] = "Gestión de Inventario";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>Gestiona los niveles de stock de tus productos.</p>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["Message"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["Error"]
+    </div>
+}
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Id)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Name)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Brand)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstOrDefault().Stock)</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null)
+        {
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Id)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Brand)</td>
+                    <td>
+                        <form asp-action="UpdateStock" method="post" class="d-inline">
+                            <input type="hidden" name="productId" value="@item.Id" />
+                            <input type="number" name="newStock" value="@item.Stock" min="0" class="form-control" style="width: 80px; display: inline-block;" />
+                            <button type="submit" class="btn btn-sm btn-primary">Actualizar</button>
+                        </form>
+                    </td>
+                    <td></td> @* Empty cell for alignment with header *@
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@if (Model == null || !Model.Any())
+{
+    <p>No hay productos disponibles para gestionar el inventario.</p>
+}

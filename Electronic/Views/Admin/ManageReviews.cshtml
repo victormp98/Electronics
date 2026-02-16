@@ -1,0 +1,59 @@
+@using Electronic.Models
+@model List<Resena>
+
+@{
+    ViewData["Title"] = "Gestión de Reseñas";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["Message"]
+    </div>
+}
+
+@if (Model == null || !Model.Any())
+{
+    <p>No hay reseñas para moderar.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Producto</th>
+                <th>Usuario</th>
+                <th>Calificación</th>
+                <th>Comentario</th>
+                <th>Fecha</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var review in Model)
+            {
+                <tr>
+                    <td>@review.Id</td>
+                    <td>@review.Producto?.Name</td>
+                    <td>@review.User?.Name</td>
+                    <td>@review.Rating / 5</td>
+                    <td>@review.Comment</td>
+                    <td>@review.Date.ToShortDateString()</td>
+                    <td>
+                        <form asp-action="DeleteReview" asp-controller="Admin" method="post" class="d-inline">
+                            <input type="hidden" name="reviewId" value="@review.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-secondary">Volver al Panel de Administración</a>
+</div>

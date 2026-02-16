@@ -1,0 +1,67 @@
+@using Electronic.Models
+@model List<Wishlist>
+
+@{
+    ViewData["Title"] = "Mi Lista de Deseos";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (Model == null || !Model.Any())
+{
+    <p>Tu lista de deseos está vacía.</p>
+    <p><a asp-controller="Product" asp-action="Index">Explorar Productos</a></p>
+}
+else
+{
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            @TempData["Message"]
+        </div>
+    }
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>Precio</th>
+                <th>Fecha Agregado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @if (item.Producto.Imagenes != null && item.Producto.Imagenes.Any())
+                        {
+                            <img src="@item.Producto.Imagenes.FirstOrDefault(i => i.IsMain)?.ImageUrl ?? item.Producto.Imagenes.FirstOrDefault()?.ImageUrl" alt="@item.Producto.Name" style="width: 50px;" />
+                        }
+                        else
+                        {
+                            <img src="https://via.placeholder.com/50x50.png?text=No+Image" alt="No Image" style="width: 50px;" />
+                        }
+                    </td>
+                    <td><a asp-controller="Product" asp-action="Details" asp-route-id="@item.ProductoId">@item.Producto.Name</a></td>
+                    <td>@item.Producto.Brand</td>
+                    <td>@item.Producto.Price.ToString("C")</td>
+                    <td>@item.DateAdded.ToShortDateString()</td>
+                    <td>
+                        <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
+                            <input type="hidden" name="productId" value="@item.ProductoId" />
+                            <input type="hidden" name="quantity" value="1" />
+                            <button type="submit" class="btn btn-primary btn-sm">Añadir al Carrito</button>
+                        </form>
+                        <form asp-controller="Account" asp-action="RemoveFromWishlist" method="post" class="d-inline ms-2">
+                            <input type="hidden" name="wishlistId" value="@item.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,66 @@
+@using Electronic.Models
+@model List<Producto>
+
+@{
+    ViewData["Title"] = "Catálogo de Productos";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form asp-controller="Product" asp-action="Index" method="get" class="mb-4">
+    <div class="form-group">
+        <label for="searchString">Buscar:</label>
+        <input type="text" name="searchString" class="form-control" value="@ViewBag.SearchString" />
+    </div>
+    <div class="form-group mt-2">
+        <label for="productCategory">Categoría:</label>
+        <select name="productCategory" class="form-control">
+            <option value="">Todas</option>
+            @if (ViewBag.Categories != null)
+            {
+                foreach (var category in ViewBag.Categories)
+                {
+                    <option value="@category" selected="@(category == ViewBag.ProductCategory)">@category</option>
+                }
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Filtrar</button>
+</form>
+
+<div class="row">
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var product in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@product.Name</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@product.Brand</h6>
+                        <p class="card-text">
+                            <strong>Precio:</strong> @product.Price.ToString("C") <br />
+                            <strong>Categoría:</strong> @product.Category
+                        </p>
+                        <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                            <input type="hidden" name="productId" value="@product.Id" />
+                            <input type="number" name="quantity" value="1" min="1" class="form-control mb-2" style="width: 80px; display: inline-block;" />
+                            <button type="submit" class="btn btn-primary">Añadir al Carrito</button>
+                        </form>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <form asp-controller="Product" asp-action="AddToWishlist" method="post" class="mt-2">
+                                <input type="hidden" name="productId" value="@product.Id" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Añadir a Lista de Deseos</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <p>No hay productos disponibles en el catálogo.</p>
+    }
+</div>

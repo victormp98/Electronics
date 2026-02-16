@@ -1,0 +1,87 @@
+@using Electronic.Models
+@model Producto
+
+@{
+    ViewData["Title"] = Model.Name + " Detalles";
+    var averageRating = ViewBag.AverageRating;
+}
+
+<h1>@Model.Name</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        @if (Model.Imagenes != null && Model.Imagenes.Any())
+        {
+            <img src="@Model.Imagenes.FirstOrDefault(i => i.IsMain)?.ImageUrl ?? Model.Imagenes.FirstOrDefault()?.ImageUrl" class="img-fluid" alt="@Model.Name" />
+        }
+        else
+        {
+            <img src="https://via.placeholder.com/400x300.png?text=No+Image" class="img-fluid" alt="No Image" />
+        }
+    </div>
+    <div class="col-md-6">
+        <h3>@Model.Brand</h3>
+        <p><strong>Precio:</strong> @Model.Price.ToString("C")</p>
+        <p><strong>Stock:</strong> @Model.Stock</p>
+        <p><strong>Categoría:</strong> @Model.Category</p>
+        <p><strong>Especificaciones:</strong> @Model.Specifications</p>
+        <p><strong>Garantía:</strong> @Model.Warranty</p>
+
+        <p><strong>Calificación Promedio:</strong> @averageRating.ToString("F1") / 5.0 (@Model.Resenas.Count reseñas)</p>
+
+        @if (Model.Stock > 0)
+        {
+            <form asp-controller="Cart" asp-action="AddToCart" method="post" class="mt-3">
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <input type="number" name="quantity" value="1" min="1" max="@Model.Stock" class="form-control mb-2" style="width: 80px; display: inline-block;" />
+                <button type="submit" class="btn btn-primary">Añadir al Carrito</button>
+            </form>
+        }
+        else
+        {
+            <p class="text-danger">Agotado</p>
+        }
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <form asp-controller="Product" asp-action="AddToWishlist" method="post" class="mt-2">
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <button type="submit" class="btn btn-outline-danger">Añadir a Lista de Deseos</button>
+            </form>
+        }
+
+        <a asp-action="Index" class="btn btn-secondary mt-3">Volver al Catálogo</a>
+    </div>
+</div>
+
+<hr />
+
+<h2>Reseñas de Clientes</h2>
+@if (Model.Resenas != null && Model.Resenas.Any())
+{
+    @foreach (var review in Model.Resenas.OrderByDescending(r => r.Date))
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">@review.User?.Name - @review.Rating / 5</h5>
+                <h6 class="card-subtitle mb-2 text-muted">@review.Date.ToShortDateString()</h6>
+                <p class="card-text">@review.Comment</p>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>Aún no hay reseñas para este producto.</p>
+}
+
+@if (User.Identity.IsAuthenticated)
+{
+    <div class="mt-4">
+        <a asp-action="RateProduct" asp-controller="Product" asp-route-productId="@Model.Id" class="btn btn-success">Escribir una Reseña</a>
+    </div>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,4 +1,5 @@
 using Electronic.Models;
+using Microsoft.AspNetCore.Authorization; // Add this line
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -18,6 +19,7 @@ namespace Electronic.Controllers
             return View();
         }
 
+        [Authorize] // Add this line
         public IActionResult Privacy()
         {
             return View();
